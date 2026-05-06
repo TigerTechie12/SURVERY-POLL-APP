@@ -71,7 +71,7 @@ router.post('/surveys', async (req: Request, res: Response) => {
 
 // Get a survey by ID
 router.get('/surveys/:id', async(req: Request, res: Response) => {
-    const surveyId = parseInt(req.params.id);
+    const surveyId = parseInt(req.params.id as string);
     try {
         const survey = await prisma.survey.findUnique({
             where: { id: surveyId },
@@ -104,7 +104,7 @@ router.get('/surveys/:id', async(req: Request, res: Response) => {
 
 // Update a survey by ID
 router.put('/surveys/:id', async (req: Request, res: Response) => {
-    const surveyId = parseInt(req.params.id);
+    const surveyId = parseInt(req.params.id as string);
     const { title, questions } = req.body;
     const userId = (req as any).user.userId;
 
@@ -159,7 +159,7 @@ router.put('/surveys/:id', async (req: Request, res: Response) => {
 
 // Delete a survey by ID
 router.delete('/surveys/:id', async (req: Request, res: Response) => {
-    const surveyId = parseInt(req.params.id);
+    const surveyId = parseInt(req.params.id as string);
     const userId = (req as any).user.userId;
 
     try {
