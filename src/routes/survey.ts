@@ -45,6 +45,7 @@ router.post('/surveys', async (req: Request, res: Response) => {
                 questions: {
                     create: questions.map((q: any) => ({
                         title: q.title,
+                    
                         options: {
                             create: q.options.map((o: any) => ({
                                 text: o.text
@@ -108,7 +109,7 @@ router.put('/surveys/:id', async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
 
     try {
-        // First check if survey exists and belongs to user
+        
         const existingSurvey = await prisma.survey.findUnique({
             where: { id: surveyId }
         });
@@ -162,7 +163,7 @@ router.delete('/surveys/:id', async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
 
     try {
-        // First check if survey exists and belongs to user
+      
         const existingSurvey = await prisma.survey.findUnique({
             where: { id: surveyId }
         });
