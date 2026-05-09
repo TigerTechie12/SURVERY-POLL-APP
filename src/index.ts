@@ -2,7 +2,9 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import userRouter from './routes/user';
 import surveyRouter from './routes/survey';
+import { PrismaClient } from '../generated/prisma';
 
+const prisma = new PrismaClient()
 const app = express()
 
 app.use(cors())
@@ -18,6 +20,13 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 
 const PORT = process.env.PORT || 3000
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
-})
+async function main() {
+    await prisma.$executeRawUnsafe(
+        `ALTER TABLE "Option" ADD COLUMN IF NOT EXISTS "votes" INTEGER NOT NULL DEFAULT 0`
+    )
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`)
+    })
+}
+
+main()
