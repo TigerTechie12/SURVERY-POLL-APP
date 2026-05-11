@@ -102,16 +102,20 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 router.post('/:id/vote', async (req: Request, res: Response) => {
     const { optionId } = req.body
+    const id = parseInt(String(optionId))
 
     try {
-        const option = await prisma.option.update({
-            where: { id: optionId },
-            data: { votes: { increment: 1 } }
-        })
-        res.json({ message: 'Vote recorded', option })
-    } catch (error) {
-        console.error('Error recording vote:', error)
-        res.status(500).json({ message: 'Failed to record vote' })
+        await prisma.$executeRawUnsafe(
+            `ALTER TABLE "Option" ADD COLUMN IF NOT EXISTS votes INTEGER NOT NULL DEFAULT 0`
+        )
+        await prisma.$executeRawUnsafe(
+            `UPDATE "Option" SET votes = votes + 1 WHERE id = $1`,
+            id
+        )
+        res.json({ message: 'Vote recorded' })
+    } catch (error: any) {
+        console.error('Vote error:', error)
+        res.status(500).json({ message: error?.message || 'Failed to record vote' })
     }
 })
 

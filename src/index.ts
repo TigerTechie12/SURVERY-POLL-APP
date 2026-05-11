@@ -21,9 +21,13 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 const PORT = process.env.PORT || 3000
 
 async function main() {
-    await prisma.$executeRawUnsafe(
-        `ALTER TABLE "Option" ADD COLUMN IF NOT EXISTS "votes" INTEGER NOT NULL DEFAULT 0`
-    )
+    try {
+        await prisma.$executeRawUnsafe(
+            `ALTER TABLE "Option" ADD COLUMN IF NOT EXISTS votes INTEGER NOT NULL DEFAULT 0`
+        )
+    } catch (e) {
+        console.error('DB init warning:', e)
+    }
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`)
     })
