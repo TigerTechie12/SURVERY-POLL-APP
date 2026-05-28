@@ -68,7 +68,7 @@ router.post('/', async (req: Request, res: Response) => {
 })
 
 router.get('/:id', async (req: Request, res: Response) => {
-    const surveyId = parseInt(req.params.id)
+    const surveyId = parseInt(String(req.params.id))
     try {
         const survey = await prisma.survey.findUnique({
             where: { id: surveyId },
@@ -104,23 +104,31 @@ router.post('/:id/vote', async (req: Request, res: Response) => {
     const { optionId } = req.body
     const id = parseInt(String(optionId))
 
+    if (Number.isNaN(id)) {
+        res.status(400).json({ message: 'A valid optionId is required' })
+        return
+    }
+
     try {
-        await prisma.$executeRawUnsafe(
-            `ALTER TABLE "Option" ADD COLUMN IF NOT EXISTS votes INTEGER NOT NULL DEFAULT 0`
-        )
-        await prisma.$executeRawUnsafe(
-            `UPDATE "Option" SET votes = votes + 1 WHERE id = $1`,
-            id
-        )
+        await prisma.option.update({
+            where: { id },
+            data: { votes: { increment: 1 } }
+        })
         res.json({ message: 'Vote recorded' })
     } catch (error: any) {
         console.error('Vote error:', error)
-        res.status(500).json({ message: error?.message || 'Failed to record vote' })
+        if (error?.code === 'P2025') {
+            res.status(404).json({ message: 'Option not found' })
+            return
+        }
+        res.status(500).json({ message: 'Failed to record vote' })
+
+
     }
 })
 
 router.put('/:id', async (req: Request, res: Response) => {
-    const surveyId = parseInt(req.params.id)
+    const surveyId = parseInt(String(req.params.id))
     const { title, questions } = req.body
     const userId = (req as any).user.userId
 
@@ -175,7 +183,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 })
 
 router.delete('/:id', async (req: Request, res: Response) => {
-    const surveyId = parseInt(req.params.id)
+    const surveyId = parseInt(String(req.params.id))
     const userId = (req as any).user.userId
 
     try {
